@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 
-class ObjectIdentificationModule:
+class ObjectIdentificationModuleLite:
     def __init__(self, car_var = 0, bike_var = 0, pedestrian_var = 0, car_color = (255, 0, 0), bike_color = (182, 0, 178) , pedestrian_color = (1, 98, 255)):
-        # Inicjalizacja modułu identyfikacji obiektów
-        self.net = cv2.dnn.readNet('yolov3.weights', 'yolov3.cfg') # Wczytanie modelu YOLOv3
+        # YOLO - Lite
+        self.net = cv2.dnn.readNet('yolov3-tiny.weights', 'yolov3-tiny.cfg')
         self.classes = []
         with open('coco.names', 'r') as f: # Wczytanie nazw klas
             self.classes = f.read().splitlines()
@@ -17,7 +17,6 @@ class ObjectIdentificationModule:
         self.car_color = car_color
         self.bike_color = bike_color 
         self.pedestrian_color = pedestrian_color
-        
 
     def identify_objects(self, frame):
         # Identyfikacja obiektów - wykrywanie samochodów, pieszych i rowerzystów za pomocą modelu YOLOv3 - You Only Look Once
@@ -48,7 +47,6 @@ class ObjectIdentificationModule:
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id] # pewność powyżej 0.5 to uznajemy za wykryty obiekt
-                
                 if confidence > 0.5 and (class_id in [0,2,3]): # Indeks 0: "person", 2: "car", 3: "bicycle"
                     center_x = int(detection[0] * width)
                     center_y = int(detection[1] * height)
@@ -81,6 +79,7 @@ class ObjectIdentificationModule:
                     color = self.pedestrian_color #  dla pieszych
                     cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
                     cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            
         return frame
     
     def get_detected_objects(self):
